@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HUNTER×HUNTER 超上級検定</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", sans-serif;
+      background: #06120b;
+      color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #7cff9b;
+      text-shadow: 0 0 12px #00ff66;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #c7ffd4;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #0d1f13;
+      border: 1px solid #2e8b57;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 0 20px rgba(0, 255, 100, 0.18);
+    }
+
+    .question-count {
+      color: #8effaa;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .question {
+      font-size: 20px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .choices button {
+      width: 100%;
+      text-align: left;
+      padding: 14px;
+      margin: 8px 0;
+      border: 1px solid #3ba765;
+      border-radius: 10px;
+      background: #102817;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .choices button:hover {
+      background: #174323;
+    }
+
+    .choices button.correct {
+      background: #1f7a3a;
+      border-color: #7cff9b;
+    }
+
+    .choices button.wrong {
+      background: #6b1d1d;
+      border-color: #ff7777;
+    }
+
+    .next-btn, .restart-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #7cff9b;
+      color: #06120b;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .result {
+      text-align: center;
+      font-size: 22px;
+      line-height: 1.8;
+    }
+
+    .rank {
+      color: #7cff9b;
+      font-size: 26px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #00ff66;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .footer {
+      text-align: center;
+      color: #8aaa91;
+      font-size: 12px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>HUNTER×HUNTER 超上級検定</h1>
+    <div class="subtitle">20問中、何問正解できるか？</div>
+
+    <div class="card" id="quizBox">
+      <div class="question-count" id="questionCount"></div>
+      <div class="question" id="questionText"></div>
+      <div class="choices" id="choices"></div>
+      <button class="next-btn hidden" id="nextBtn">次の問題へ</button>
+    </div>
+
+    <div class="card hidden" id="resultBox">
+      <div class="result" id="resultText"></div>
+      <button class="restart-btn" onclick="restartQuiz()">もう一度挑戦する</button>
+    </div>
+
+    <div class="footer">
+      ※非公式ファン検定です
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        q: "クラピカの『絶対時間（エンペラータイム）』発動時、寿命はどう消費される？",
+        choices: ["1秒ごとに1時間", "1分ごとに1時間", "1時間ごとに1日", "発動回数ごとに1年"],
+        answer: 1
+      },
+      {
+        q: "キメラアント編で、ネフェルピトーが最初に操作したカイトの状態として正しいのは？",
+        choices: ["死後の念で暴走していた", "生きたまま操っていた", "完全な死体を人形化していた", "記憶だけを抜き出していた"],
+        answer: 2
+      },
+      {
+        q: "ゴンが初めて『ジャジャン拳』を披露した相手は誰？",
+        choices: ["ゲンスルー", "ナックル", "カナリア", "ノブナガ"],
+        answer: 3
+      },
+      {
+        q: "幻影旅団の団員番号と能力の組み合わせで正しいものは？",
+        choices: ["フィンクス＝団員No.5＝廻天", "シャルナーク＝団員No.6＝携帯する他人の運命", "フェイタン＝団員No.2＝許されざる者", "マチ＝団員No.3＝念糸"],
+        answer: 3
+      },
+      {
+        q: "グリードアイランドで『同行（アカンパニー）』の説明として正しいのは？",
+        choices: ["指定ポケットカードしか対象にできない", "カード化限度枚数を超えると使えない", "プレイヤー本人しか移動できない", "知っている人物の元へ移動できる"],
+        answer: 3
+      },
+      {
+        q: "ゼノ＝ゾルディックの『龍頭戯画』は主に何系統の念能力？",
+        choices: ["放出系", "操作系", "変化系", "具現化系"],
+        answer: 0
+      },
+      {
+        q: "メルエムが薔薇を浴びたあと、最終的な死因となったものは？",
+        choices: ["爆風", "念能力", "放射毒", "酸欠"],
+        answer: 2
+      },
+      {
+        q: "十二支んのうち、『亥』に該当するキャラクターは？",
+        choices: ["サイユウ", "ピヨン", "ギンタ", "クルック"],
+        answer: 0
+      },
+      {
+        q: "ヒソカの『伸縮自在の愛（バンジーガム）』の性質として正しいものは？",
+        choices: ["ゴムだけ", "ガムだけ", "ゴムとガム両方", "粘土とゴム"],
+        answer: 2
+      },
+      {
+        q: "ナックルの『天上不知唯我独損（ハコワレ）』で相手が破産するとどうなる？",
+        choices: ["念能力を失う", "強制絶状態になる", "オーラが0になる", "死ぬ"],
+        answer: 1
+      },
+      {
+        q: "第4王子ツェリードニヒの念能力の特徴として正しいものは？",
+        choices: ["未来予知に近い能力", "時間停止", "他人の能力コピー", "記憶改変"],
+        answer: 0
+      },
+      {
+        q: "レイザーがグリードアイランド内で担当していた役割として近いものは？",
+        choices: ["スペル管理", "港湾・放出系システム", "全カード管理", "試験官"],
+        answer: 1
+      },
+      {
+        q: "念の四大行に含まれないものは？",
+        choices: ["纏", "練", "発", "周"],
+        answer: 3
+      },
+      {
+        q: "コルトの前世に関する説明として正しいものは？",
+        choices: ["レイナの兄", "カイトの弟子", "ジャイロ本人", "ポックルの転生"],
+        answer: 0
+      },
+      {
+        q: "ウボォーギンがクラピカに敗北した大きな要因は？",
+        choices: ["心臓を止められた", "強制的に絶状態にされた", "毒を盛られた", "念を奪われた"],
+        answer: 1
+      },
+      {
+        q: "ビスケの本来の姿について正しいものは？",
+        choices: ["実年齢は20代", "本来は筋肉質な巨体", "操作系で姿を偽装", "具現化系で肉体を作る"],
+        answer: 1
+      },
+      {
+        q: "ゴンがピトー戦で強制成長した代償として最も近いものは？",
+        choices: ["記憶", "念能力を使う力・才能", "寿命の半分", "肉体そのもの"],
+        answer: 1
+      },
+      {
+        q: "ノヴの能力『4次元マンション』の入り口は何によって作られる？",
+        choices: ["念糸", "空間の裂け目のような入口", "魔法陣", "カード"],
+        answer: 1
+      },
+      {
+        q: "トンパがハンター試験を何度も受ける主な理由は？",
+        choices: ["合格したくないから", "新人潰しを楽しむため", "協会への復讐", "賞金目的"],
+        answer: 1
+      },
+      {
+        q: "冨樫義博作品で、HUNTER×HUNTER以前の代表作として正しいものは？",
+        choices: ["SLAM DUNK", "幽☆遊☆白書", "RAVE", "シャーマンキング"],
+        answer: 1
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionCount = document.getElementById("questionCount");
+    const questionText = document.getElementById("questionText");
+    const choicesBox = document.getElementById("choices");
+    const nextBtn = document.getElementById("nextBtn");
+    const quizBox = document.getElementById("quizBox");
+    const resultBox = document.getElementById("resultBox");
+    const resultText = document.getElementById("resultText");
+
+    function showQuestion() {
+      answered = false;
+      nextBtn.classList.add("hidden");
+      choicesBox.innerHTML = "";
+
+      const quiz = quizData[currentQuestion];
+
+      questionCount.textContent = `第${currentQuestion + 1}問 / ${quizData.length}問`;
+      questionText.textContent = quiz.q;
+
+      quiz.choices.forEach((choice, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.onclick = () => selectAnswer(btn, index);
+        choicesBox.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(button, selectedIndex) {
+      if (answered) return;
+      answered = true;
+
+      const correctIndex = quizData[currentQuestion].answer;
+      const buttons = choicesBox.querySelectorAll("button");
+
+      buttons.forEach((btn, index) => {
+        btn.disabled = true;
+        if (index === correctIndex) {
+          btn.classList.add("correct");
+        }
+      });
+
+      if (selectedIndex === correctIndex) {
+        score++;
+      } else {
+        button.classList.add("wrong");
+      }
+
+      nextBtn.classList.remove("hidden");
+    }
+
+    nextBtn.onclick = () => {
+      currentQuestion++;
+      if (currentQuestion < quizData.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    };
+
+    function showResult() {
+      quizBox.classList.add("hidden");
+      resultBox.classList.remove("hidden");
+
+      let rank = "";
+
+      if (score <= 5) {
+        rank = "ハンター試験一次落ち";
+      } else if (score <= 10) {
+        rank = "天空闘技場200階未満";
+      } else if (score <= 15) {
+        rank = "一流ハンター級";
+      } else if (score <= 19) {
+        rank = "十二支ん候補";
+      } else {
+        rank = "冨樫の休載周期まで読める者";
+      }
+
+      resultText.innerHTML = `
+        <p>あなたの正解数は</p>
+        <p><strong>${score} / ${quizData.length}問</strong></p>
+        <p class="rank">${rank}</p>
+      `;
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      quizBox.classList.remove("hidden");
+      resultBox.classList.add("hidden");
+      showQuestion();
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
